@@ -6,7 +6,7 @@ from tqdm import tqdm
 import functools
 
 # import fastckpt before transformers
-from lightseq_ckpt_monkey_patch import replace_hf_ckpt_with_new_ckpt, clear_all_buffers_at_the_end_of_training
+from .lightseq_ckpt_monkey_patch import replace_hf_ckpt_with_new_ckpt, clear_all_buffers_at_the_end_of_training
 replace_hf_ckpt_with_new_ckpt()
 
 import numpy as np
@@ -19,7 +19,7 @@ from transformers.trainer_pt_utils import get_module_class_from_name
 from torch.distributed.fsdp import FullyShardedDataParallel as FSDP 
 import torch.distributed as dist
 
-from async_communication import reset_global_memory_buffer
+from .async_communication import reset_global_memory_buffer
 
 
 IGNORE_TOKEN_ID = LabelSmoother.ignore_index

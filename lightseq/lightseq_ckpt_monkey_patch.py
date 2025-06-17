@@ -12,8 +12,8 @@ from transformers.models.llama.modeling_llama import apply_rotary_pos_emb, BaseM
 
 from einops import rearrange
 
-from lightseq_async_attn import _lightseq_forward, _lightseq_backward
-from async_communication import initialize_distributed, reset_global_memory_buffer
+from .lightseq_async_attn import _lightseq_forward, _lightseq_backward
+from .async_communication import initialize_distributed, reset_global_memory_buffer
 
 
 # define a global buffer to save flash attention outputs

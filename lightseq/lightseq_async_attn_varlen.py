@@ -21,7 +21,7 @@ try:
 except:
     pass
 
-from async_communication import (is_last_time, is_compute_for_local_query, is_sync_from_remote, is_idle, print_and_reset_comm_stats, 
+from .async_communication import (is_last_time, is_compute_for_local_query, is_sync_from_remote, is_idle, print_and_reset_comm_stats, 
         launch_async_handles, wait_async_handles, maybe_send_recv_fwd_qkvo, maybe_send_recv_bwd_qkvo, maybe_send_recv_bwd_last_dkv, reset_global_memory_buffer,
         maybe_get_set_global_memory_buffer, maybe_get_set_global_memory_buffer_bwd, initialize_distributed, get_sequence_parallel_size, get_sequence_parallel_rank)
 
@@ -384,7 +384,7 @@ def _lightseq_backward_varlen(do, q, k, v, o, L, sm_scale, comm_mode, backward_e
             if time_step == 0:
                 assert backward_engine == "flash", "We haven't supportted varlen feature in xformer"
                 if backward_engine == "flash":
-                    _flash_attn_varlen_backward(do, q, k, v, o, L, dq, dk, dv, cu_seq_lens, cu_seq_lens, max_seqlen, max_seqlen, 0.0, sm_scale, True, None)
+                    _flash_attn_varlen_backward(do, q, k, v, o, L, dq, dk, dv, cu_seq_lens, cu_seq_lens, max_seqlen, max_seqlen, 0.0, sm_scale, True, -1, -1, 0.0, None, False)
                 else:
                     inp = Inputs(query=q, key=maybe_repeat_kv_bwd(q.shape[2], k), value=maybe_repeat_kv_bwd(q.shape[2], v), attn_bias=xformers.ops.LowerTriangularMask(), p=0, scale=sm_scale)
                     op_ctx = Context(lse=L, out=o, rng_state=None)
@@ -395,7 +395,7 @@ def _lightseq_backward_varlen(do, q, k, v, o, L, sm_scale, comm_mode, backward_e
             else:
                 assert backward_engine == "flash", "We haven't supportted varlen feature in xformer"
                 if backward_engine == "flash":
-                    _flash_attn_varlen_backward(do, q, peer_k[buffer_idx_2], peer_v[buffer_idx_2], o, L, dq_delta[buffer_idx_2], dk_delta[buffer_idx_2], dv_delta[buffer_idx_2], cu_seq_lens, cu_seq_lens, max_seqlen, max_seqlen, 0.0, sm_scale, False, None)
+                    _flash_attn_varlen_backward(do, q, peer_k[buffer_idx_2], peer_v[buffer_idx_2], o, L, dq_delta[buffer_idx_2], dk_delta[buffer_idx_2], dv_delta[buffer_idx_2], cu_seq_lens, cu_seq_lens, max_seqlen, max_seqlen, 0.0, sm_scale, False, -1, -1, 0.0, None, False)
                 else:
                     inp = Inputs(query=q, key=maybe_repeat_kv_bwd(q.shape[2], peer_k[buffer_idx_2]), value=maybe_repeat_kv_bwd(q.shape[2], peer_v[buffer_idx_2]), attn_bias=None, p=0, scale=sm_scale)
                     op_ctx = Context(lse=L, out=o, rng_state=None)
@@ -410,7 +410,7 @@ def _lightseq_backward_varlen(do, q, k, v, o, L, sm_scale, comm_mode, backward_e
         #    print(f"BWD t={time_step}: (Comp) R={seq_rank} helps other")
             assert backward_engine == "flash", "We haven't supportted varlen feature in xformer"
             if backward_engine == "flash":
-                _flash_attn_varlen_backward(peer_do[buffer_idx_2], peer_q[buffer_idx_2], k, v, peer_o[buffer_idx_2], peer_L[buffer_idx_2], dq_delta[buffer_idx_2], dk_delta[buffer_idx_2], dv_delta[buffer_idx_2], cu_seq_lens, cu_seq_lens, max_seqlen, max_seqlen, 0.0, sm_scale, False, None)
+                _flash_attn_varlen_backward(peer_do[buffer_idx_2], peer_q[buffer_idx_2], k, v, peer_o[buffer_idx_2], peer_L[buffer_idx_2], dq_delta[buffer_idx_2], dk_delta[buffer_idx_2], dv_delta[buffer_idx_2], cu_seq_lens, cu_seq_lens, max_seqlen, max_seqlen, 0.0, sm_scale, False, -1, -1, 0.0, None, False)
             else:
                 inp = Inputs(query=peer_q[buffer_idx_2], key=maybe_repeat_kv_bwd(q.shape[2], k), value=maybe_repeat_kv_bwd(q.shape[2], v), attn_bias=None, p=0, scale=sm_scale)
                 op_ctx = Context(lse=peer_L[buffer_idx_2], out=peer_o[buffer_idx_2], rng_state=None)
